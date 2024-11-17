@@ -11,7 +11,7 @@ $cameraChips = @()
 $DriveLetterList = (get-psdrive -psprovider filesystem).name # Get a list of drive letters 
 
 foreach ($each in $DriveLetterList) {
-    if (test-path -pathtype leaf -path "${each}:\*") {
+    if (test-path -pathtype Any -path "${each}:\*") {
         $diskNumber = (Get-Partition -DriveLetter $each).disknumber
         if (!(get-disk -number $diskNumber).isboot){
             $cameraChips += $each
@@ -19,19 +19,19 @@ foreach ($each in $DriveLetterList) {
     }
 }
 
-
 foreach ($each in $cameraChips) {
     $checkstand = $each + ":\stand.txt"
     $checkdrive = $each + ":"
     if (test-path -pathtype leaf -path $checkstand) {
         set-location $checkdrive
-        $standNumber = Get-Content $checkstand -Raw
+        #$standNumber = Get-Content $checkstand -Raw
+        $standNumber = Get-Content -Path $checkstand -TotalCount 1
         $openstandpix = 0
         break
     }
 }
 
-if($openstandpix -and $cameraChips.Length -gt0)
+if($openstandpix -and $cameraChips.Length -gt 0)
 {
     foreach ($each in $cameraChips) {
         write-host "Unlabled camera chip has been detected in Drive: $each"
