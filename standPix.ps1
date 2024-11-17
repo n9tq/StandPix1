@@ -3,8 +3,24 @@ $pixCount = 0
 $CWD = Get-Location
 $CurrentDate = Get-Date
 [bool] $openstandpix = 1
+$cameraChips = @()
 
-foreach ($each in (get-psdrive -psprovider filesystem).name) {
+
+# (Get-Partition -DriveLetter "e").disknumber
+# (get-disk -number 1).isboot
+$DriveLetterList = (get-psdrive -psprovider filesystem).name # Get a list of drive letters 
+
+foreach ($each in $DriveLetterList) {
+    if (test-path -pathtype leaf -path "${each}:\*") {
+        $diskNumber = (Get-Partition -DriveLetter $each).disknumber
+        if (!(get-disk -number $diskNumber).isboot){
+            $cameraChips += $each
+        }
+    }
+}
+
+
+foreach ($each in $cameraChips) {
     $checkstand = $each + ":\stand.txt"
     $checkdrive = $each + ":"
     if (test-path -pathtype leaf -path $checkstand) {
@@ -15,8 +31,28 @@ foreach ($each in (get-psdrive -psprovider filesystem).name) {
     }
 }
 
+if($openstandpix -and $cameraChips.Length -gt0)
+{
+    foreach ($each in $cameraChips) {
+        write-host "Unlabled camera chip has been detected in Drive: $each"
+        $response = Read-Host "Would you like to label it now? [Y/N]: "
+        if (($respnse -contains "Y") -or ($response -contains "y")) {
+            $standLabel = Read-Host "Please enter Stand Label: "
+            write-host "New label is $standLabel"
+            $standLabel | Out-File "${each}:\stand.txt"
+            $standNumber = $standLabel
+            Set-Location "${each}:"
+            $openstandpix = 0
+        }
+
+        
+    }
+}
 If(($openstandpix))
 {
+    # Check to see if there are any chips inserted...
+    #if(test-path -PathType leaf -path 
+    
     write-host "Chip not dectected...opening local picutures"
     #invoke-item C:\Users\wirsb\OneDrive\Documents\StandPix
     invoke-item C:\Users\wirsb\OneDrive\Documents\StandPix
