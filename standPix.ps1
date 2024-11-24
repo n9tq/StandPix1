@@ -129,7 +129,7 @@ if (!($respnse -eq "x") -and !($response -eq "X"))
 {
     if($pixCount -eq 0)
     {
-        invoke-item $path
+        invoke-item ($path | sort-object Name)
     }
     else
     {
